@@ -19,15 +19,18 @@ class ColaDataModule(pl.LightningDataModule):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     def prepare_data(self):
+        """Download the data and split into training and validation splits. """
         pass
 
     def setup(self, stage: str = None):
         """
 
         Args:
-            stage:
+            stage: This argument will be used by the trainer to work out the
+            stage we are at: {fit, validate, test, predict}.
         """
-        pass
+        if stage == "fit" or stage is None:
+            pass
 
     def train_dataloader(self):
         return None
