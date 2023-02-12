@@ -21,6 +21,10 @@ class ColaDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.max_length = max_length
 
+        self.dset = None
+        self.data_train, self.data_val, self.data_test, self.data_predict = \
+            ([None] * 4)
+
     def prepare_data(self):
         """Download and caches the dataset. """
         self.dset = datasets.load_dataset(path='glue', name='cola')
