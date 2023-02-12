@@ -31,6 +31,7 @@ class ColaDataModule(pl.LightningDataModule):
 
     def setup(self, stage: str = None):
         """
+        Tokenizes and formats various data splits.
 
         Args:
             stage: This argument will be used by the trainer to work out the
@@ -75,7 +76,7 @@ class ColaDataModule(pl.LightningDataModule):
         return DataLoader(self.data_predict, batch_size=32)
 
     def tokenize_data(self, example):
-        """Tokenizes one example. """
+        """Tokenizes a single example. """
         return self.tokenizer(
             text=example['sentence'],
             truncation=True,
