@@ -1,26 +1,29 @@
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import datasets
-from transformers import AutoTokenizer
+from transformers import PreTrainedTokenizer
 
 
 class ColaDataModule(pl.LightningDataModule):
-    def __init__(self, model_name: str, batch_size: int):
+    def __init__(
+            self,
+            tokenizer: PreTrainedTokenizer,
+            batch_size: int,
+            max_length: int):
         """
         Args:
-            model_name: Model name. It will be used to access the corresponding
-            tokenizer.
-
+            tokenizer: Pre-trained tokenizer to use to process input text.
             batch_size: Batch size for the dataloaders.
+            max_length: Max length for tokenization.
         """
         super().__init__()
-        self.model_name = model_name
+        self.tokenizer = tokenizer
         self.batch_size = batch_size
-
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.max_length = max_length
 
     def prepare_data(self):
-        """Download the data and split into training and validation splits. """
-        pass
+        """Download and caches the dataset. """
+        self.dset = datasets.load_dataset(path='glue', name='cola')
 
     def setup(self, stage: str = None):
         """
@@ -30,16 +33,48 @@ class ColaDataModule(pl.LightningDataModule):
             stage we are at: {fit, validate, test, predict}.
         """
         if stage == "fit" or stage is None:
-            pass
+            self.data_train = self.dset['train'].map(
+                self.tokenize_data, batched=True)
+            self.data_train.set_format(
+                type='torch',
+                columns=['input_ids', 'attention_mask', 'label'])
+            self.data_val = self.dset['validation'].map(
+                self.tokenize_data, batched=True)
+            self.data_val.set_format(
+                type='torch',
+                columns=['input_ids', 'attention_mask', 'label'])
+
+        if stage == "test":
+            self.data_test = self.dset['test'].map(
+                self.tokenize_data, batched=True)
+            self.data_test.set_format(
+                type='torch',
+                columns=['input_ids', 'attention_mask', 'label'])
+
+        if stage == "predict":
+            self.data_predict = self.dset['predict'].map(
+                self.tokenize_data, batched=True)
+            self.data_predict.set_format(
+                type='torch',
+                columns=['input_ids', 'attention_mask', 'label'])
 
     def train_dataloader(self):
-        return None
+        return DataLoader(self.data_train, batch_size=32)
 
     def val_dataloader(self):
-        return None
+        return DataLoader(self.data_val, batch_size=32)
 
     def test_dataloader(self):
-        return None
+        return DataLoader(self.data_test, batch_size=32)
 
     def predict_dataloader(self):
-        return None
+        return DataLoader(self.data_predict, batch_size=32)
+
+    def tokenize_data(self, example):
+        """Tokenizes one example. """
+        return self.tokenizer(
+            text=example['sentence'],
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length
+        )
