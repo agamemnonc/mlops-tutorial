@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 from torch.optim import Optimizer
 from pytorch_lightning import LightningModule
-from torchmetrics import Accuracy, MatthewsCorrCoef
+from torchmetrics.functional import accuracy
 
 
 class ColaModule(LightningModule):
@@ -18,10 +18,6 @@ class ColaModule(LightningModule):
         self.head = head
         self.optimizer = optimizer
 
-        # Metrics
-        self.train_accuracy = Accuracy(task="binary")
-        self.valid_accuracy = Accuracy(task="binary")
-
         self.save_hyperparameters()
 
     def forward(self, input_ids, attention_mask):
@@ -36,24 +32,30 @@ class ColaModule(LightningModule):
     def training_step(self, batch, batch_idx):
         logits, preds = self.forward(batch["input_ids"], batch["attention_mask"])
         loss = F.cross_entropy(logits, batch["label"])
-        self.log("train_loss", loss, prog_bar=True, on_step=True, on_epoch=True)
-        train_acc = self.train_accuracy(preds, batch["label"])
+        train_acc = accuracy(preds, batch["label"], task="binary")
+
+        self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
         self.log("train/acc", train_acc, prog_bar=True, on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
+        self._shared_eval_step(batch, mode="val")
+
+    def test_step(self, batch, batch_idx):
+        self._shared_eval_step(batch, mode="test")
+
+    def _shared_eval_step(self, batch, mode):
         logits, preds = self.forward(batch["input_ids"], batch["attention_mask"])
         loss = F.cross_entropy(logits, batch["label"])
-        self.log("valid/loss", loss, prog_bar=True, on_step=False, on_epoch=True)
+        acc = accuracy(preds, batch["label"], task="binary")
+        self.log(f"{mode}/loss", loss, prog_bar=True, on_step=False, on_epoch=True)
+        self.log(f"{mode}/acc", acc, prog_bar=True, on_step=False, on_epoch=True)
+        return loss, acc
 
-        valid_acc = self.valid_accuracy(preds, batch["label"])
-        self.log("valid/acc", valid_acc, prog_bar=True, on_step=False, on_epoch=True)
-
-    def test_step(self, *args, **kwargs):
-        pass
-
-    def predict_step(self):
-        pass
+    def predict_step(self, batch, batch_idx, dataloader_idx=None):
+        logits, preds = self.forward(batch["input_ids"], batch["attention_mask"])
+        probas = F.softmax(logits, dim=-1)
+        return probas, preds
 
     def configure_optimizers(self):
         return self.optimizer
