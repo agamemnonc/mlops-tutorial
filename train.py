@@ -45,7 +45,11 @@ if __name__ == "__main__":
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
     logger = pl_loggers.TensorBoardLogger("logs", name="cola")
     ckpt_callback = pl_callbacks.ModelCheckpoint(
-        dirpath="models", monitor="val/loss", save_top_k=1, mode="min"
+        dirpath="models",
+        monitor="val/loss",
+        save_top_k=1,
+        mode="min",
+        save_last=True,
     )
     trainer = Trainer(
         gpus=(1 if torch.cuda.is_available() else 0),
