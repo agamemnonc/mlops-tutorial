@@ -10,7 +10,7 @@ class ColaDataModule(pl.LightningDataModule):
         tokenizer: PreTrainedTokenizer,
         batch_size: int,
         num_workers: int,
-        max_length: int
+        max_length: int,
     ):
         """
         Args:
@@ -66,16 +66,36 @@ class ColaDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.data_train, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.data_train,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=True,
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.data_val, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.data_val,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=False,
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.data_test,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=False,
+        )
 
     def predict_dataloader(self):
-        return DataLoader(self.data_predict, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.data_predict,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=False,
+        )
 
     def tokenize_data(self, example):
         """Tokenizes a single example."""
