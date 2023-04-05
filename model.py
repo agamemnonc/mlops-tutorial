@@ -18,7 +18,7 @@ class ColaModule(LightningModule):
         self.head = head
         self.optimizer = optimizer
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["model"])
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
