@@ -13,8 +13,6 @@ if __name__ == "__main__":
     batch_size = 32
     num_workers = 4
     max_length = 512
-    dset_path = "glue"
-    dset_name = "cola"
 
     # Preparation
     colamodule = ColaModule.load_from_checkpoint(model_path)
