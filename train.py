@@ -13,11 +13,11 @@ if __name__ == "__main__":
     model_name = "google/bert_uncased_L-2_H-128_A-2"
     batch_size = 32
     num_workers = 4
-    max_length = 256
-    lr = 3e-4
-    lr_scale = 3  # Learning rate for the base model parameters is lr / lr_scale
-    weight_decay = 1e-4
-    max_epochs = 10
+    max_length = 512
+    lr = 1e-2
+    lr_scale = 1  # Learning rate for the base model parameters is lr / lr_scale
+    weight_decay = 0
+    max_epochs = 5
     max_steps = -1
     fast_dev_run = False
 
