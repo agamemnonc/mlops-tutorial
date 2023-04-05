@@ -129,3 +129,10 @@ dmypy.json
 .pyre/
 
 .idea/
+
+# VSCode
+.vscode/
+
+# Logs and models
+logs/
+models/
