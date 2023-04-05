@@ -43,7 +43,8 @@ if __name__ == "__main__":
         ]
     )
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
-    logger = pl_loggers.TensorBoardLogger("logs", name="cola")
+    wandb_logger = pl_loggers.WandbLogger(project="mlops-tutorial")
+    mlflow_logger = pl_loggers.MLFlowLogger(experiment_name="mlops-tutorial")
     ckpt_callback = pl_callbacks.ModelCheckpoint(
         dirpath="models",
         monitor="val/loss",
@@ -51,12 +52,16 @@ if __name__ == "__main__":
         mode="min",
         save_last=True,
     )
+
+    logger = [wandb_logger, mlflow_logger]
+    callbacks = [ckpt_callback]
+
     trainer = Trainer(
         gpus=(1 if torch.cuda.is_available() else 0),
         max_epochs=max_epochs,
         max_steps=max_steps,
         fast_dev_run=fast_dev_run,
         logger=logger,
-        callbacks=[ckpt_callback],
+        callbacks=callbacks,
     )
     trainer.fit(model=colamodule, datamodule=datamodule)
