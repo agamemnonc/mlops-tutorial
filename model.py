@@ -4,6 +4,8 @@ from torch.optim import Optimizer
 from pytorch_lightning import LightningModule
 import torchmetrics
 
+from plots import plot_confusion_matrix
+
 
 class ColaModule(LightningModule):
     def __init__(self, model: nn.Module, head: nn.Module, optimizer: Optimizer):
