@@ -1,4 +1,7 @@
+import os
+
 import torch
+import wandb
 from transformers import AutoTokenizer, AutoModel
 from data import ColaDataModule
 from torch.optim import Adam
@@ -7,6 +10,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning import callbacks as pl_callbacks
 
+from callbacks import SamplesVisualisationLogger
 
 if __name__ == "__main__":
     # Config
@@ -43,7 +47,8 @@ if __name__ == "__main__":
         ]
     )
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
-    logger = pl_loggers.TensorBoardLogger("logs", name="cola")
+    wandb_logger = pl_loggers.WandbLogger(project="mlops-tutorial", save_dir="logs")
+
     ckpt_callback = pl_callbacks.ModelCheckpoint(
         dirpath="models",
         monitor="val/loss",
@@ -51,12 +56,19 @@ if __name__ == "__main__":
         mode="min",
         save_last=True,
     )
+
+    samples_callback = SamplesVisualisationLogger(data_module=datamodule)
+    logger = wandb_logger
+    callbacks = [ckpt_callback, samples_callback]
+
     trainer = Trainer(
-        gpus=(1 if torch.cuda.is_available() else 0),
+        accelerator="cpu" if torch.cuda.device_count() == 0 else "gpu",
+        devices=1,
         max_epochs=max_epochs,
         max_steps=max_steps,
         fast_dev_run=fast_dev_run,
         logger=logger,
-        callbacks=[ckpt_callback],
+        callbacks=callbacks
     )
     trainer.fit(model=colamodule, datamodule=datamodule)
+    wandb.finish()
