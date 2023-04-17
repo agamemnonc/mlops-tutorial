@@ -1,6 +1,7 @@
 import os
 
 import torch
+import wandb
 from transformers import AutoTokenizer, AutoModel
 from data import ColaDataModule
 from torch.optim import Adam
@@ -67,6 +68,7 @@ if __name__ == "__main__":
         max_steps=max_steps,
         fast_dev_run=fast_dev_run,
         logger=logger,
-        callbacks=callbacks,
+        callbacks=callbacks
     )
     trainer.fit(model=colamodule, datamodule=datamodule)
+    wandb.finish()
