@@ -1,7 +1,10 @@
+from typing import Dict
+
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import datasets
 from transformers import PreTrainedTokenizer
+from transformers.tokenization_utils_base import BatchEncoding
 
 
 class ColaDataModule(pl.LightningDataModule):
@@ -11,7 +14,7 @@ class ColaDataModule(pl.LightningDataModule):
         batch_size: int,
         num_workers: int,
         max_length: int,
-    ):
+    ) -> None:
         """
         Args:
             tokenizer: Pre-trained tokenizer to use to process input text.
@@ -27,11 +30,11 @@ class ColaDataModule(pl.LightningDataModule):
         self.dset = None
         self.data_train, self.data_val, self.data_test, self.data_predict = [None] * 4
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
         """Download and caches the dataset."""
         self.dset = datasets.load_dataset(path="glue", name="cola")
 
-    def setup(self, stage: str = None):
+    def setup(self, stage: str = None) -> None:
         """
         Tokenizes and formats various data splits.
 
@@ -65,7 +68,7 @@ class ColaDataModule(pl.LightningDataModule):
                 type="torch", columns=["input_ids", "attention_mask", "label"]
             )
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             self.data_train,
             batch_size=self.batch_size,
@@ -73,7 +76,7 @@ class ColaDataModule(pl.LightningDataModule):
             shuffle=True,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             self.data_val,
             batch_size=self.batch_size,
@@ -81,7 +84,7 @@ class ColaDataModule(pl.LightningDataModule):
             shuffle=False,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
         return DataLoader(
             self.data_test,
             batch_size=self.batch_size,
@@ -89,7 +92,7 @@ class ColaDataModule(pl.LightningDataModule):
             shuffle=False,
         )
 
-    def predict_dataloader(self):
+    def predict_dataloader(self) -> DataLoader:
         return DataLoader(
             self.data_predict,
             batch_size=self.batch_size,
@@ -97,7 +100,7 @@ class ColaDataModule(pl.LightningDataModule):
             shuffle=False,
         )
 
-    def tokenize_data(self, example):
+    def tokenize_data(self, example: Dict) -> BatchEncoding:
         """Tokenizes a single example."""
         return self.tokenizer(
             text=example["sentence"],

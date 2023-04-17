@@ -1,3 +1,5 @@
+import os
+
 import torch
 from transformers import AutoTokenizer, AutoModel
 from data import ColaDataModule
@@ -43,8 +45,9 @@ if __name__ == "__main__":
         ]
     )
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
-    wandb_logger = pl_loggers.WandbLogger(project="mlops-tutorial")
-    mlflow_logger = pl_loggers.MLFlowLogger(experiment_name="mlops-tutorial")
+    wandb_logger = pl_loggers.WandbLogger(
+        project="mlops-tutorial", save_dir=os.path.join(os.getcwd(), "logs"))
+
     ckpt_callback = pl_callbacks.ModelCheckpoint(
         dirpath="models",
         monitor="val/loss",
@@ -53,11 +56,12 @@ if __name__ == "__main__":
         save_last=True,
     )
 
-    logger = [wandb_logger, mlflow_logger]
+    logger = wandb_logger
     callbacks = [ckpt_callback]
 
     trainer = Trainer(
-        gpus=(1 if torch.cuda.is_available() else 0),
+        accelerator="cpu" if torch.cuda.device_count() == 0 else "gpu",
+        devices=1,
         max_epochs=max_epochs,
         max_steps=max_steps,
         fast_dev_run=fast_dev_run,
