@@ -46,8 +46,7 @@ if __name__ == "__main__":
         ]
     )
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
-    wandb_logger = pl_loggers.WandbLogger(
-        project="mlops-tutorial", save_dir="logs")
+    wandb_logger = pl_loggers.WandbLogger(project="mlops-tutorial", save_dir="logs")
 
     ckpt_callback = pl_callbacks.ModelCheckpoint(
         dirpath="models",
