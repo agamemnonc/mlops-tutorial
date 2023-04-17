@@ -68,7 +68,7 @@ if __name__ == "__main__":
         max_steps=max_steps,
         fast_dev_run=fast_dev_run,
         logger=logger,
-        callbacks=callbacks
+        callbacks=callbacks,
     )
     trainer.fit(model=colamodule, datamodule=datamodule)
     wandb.finish()
