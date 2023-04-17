@@ -9,6 +9,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning import callbacks as pl_callbacks
 
+from callbacks import SamplesVisualisationLogger
 
 if __name__ == "__main__":
     # Config
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     )
     colamodule = ColaModule(model=model, head=head, optimizer=optimizer)
     wandb_logger = pl_loggers.WandbLogger(
-        project="mlops-tutorial", save_dir=os.path.join(os.getcwd(), "logs"))
+        project="mlops-tutorial", save_dir="logs")
 
     ckpt_callback = pl_callbacks.ModelCheckpoint(
         dirpath="models",
@@ -56,8 +57,9 @@ if __name__ == "__main__":
         save_last=True,
     )
 
+    samples_callback = SamplesVisualisationLogger(data_module=datamodule)
     logger = wandb_logger
-    callbacks = [ckpt_callback]
+    callbacks = [ckpt_callback, samples_callback]
 
     trainer = Trainer(
         accelerator="cpu" if torch.cuda.device_count() == 0 else "gpu",
