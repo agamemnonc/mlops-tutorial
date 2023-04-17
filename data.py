@@ -45,19 +45,19 @@ class ColaDataModule(pl.LightningDataModule):
         if stage == "fit" or stage is None:
             self.data_train = self.dset["train"].map(self.tokenize_data, batched=True)
             self.data_train.set_format(
-                type="torch", columns=["input_ids", "attention_mask", "label"]
+                type="torch", columns=["input_ids", "attention_mask", "label", "sentence"]
             )
             self.data_val = self.dset["validation"].map(
                 self.tokenize_data, batched=True
             )
             self.data_val.set_format(
-                type="torch", columns=["input_ids", "attention_mask", "label"]
+                type="torch", columns=["input_ids", "attention_mask", "label", "sentence"]
             )
 
         if stage == "test":
             self.data_test = self.dset["test"].map(self.tokenize_data, batched=True)
             self.data_test.set_format(
-                type="torch", columns=["input_ids", "attention_mask", "label"]
+                type="torch", columns=["input_ids", "attention_mask", "label", "sentence"]
             )
 
         if stage == "predict":
@@ -65,7 +65,7 @@ class ColaDataModule(pl.LightningDataModule):
                 self.tokenize_data, batched=True
             )
             self.data_predict.set_format(
-                type="torch", columns=["input_ids", "attention_mask", "label"]
+                type="torch", columns=["input_ids", "attention_mask", "label", "sentence"]
             )
 
     def train_dataloader(self) -> DataLoader:
